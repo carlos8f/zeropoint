@@ -41,6 +41,7 @@ $(function() {
     renderer.fill_rgba = null;
     renderer.stroke_rgba = new Pre3d.RGBA(0xff/255, 0xff/255, 0xff/255, 0.7);
     renderer.camera.focal_length = 3;
+    renderer.camera.transform.translate(0, 0, -30);
     scaleCanvas();
     $(window).resize(scaleCanvas);
   };
@@ -49,16 +50,7 @@ $(function() {
   var spinner = new Spinner(opts).spin($('body').get(0));
   
   var createObject = function(object) {
-    var shape = Pre3d.ShapeUtils.makeSphere(0.2, 5, 2);
-    // Do an extrusion so we can some interesting non-planar quads.
-    var extruder = new Pre3d.ShapeUtils.Extruder();
-    extruder.selectCustom(function(shape, quad_index) {
-      return (quad_index != 0);
-    });
-    extruder.set_count(20);
-    extruder.set_distance(5);
-    extruder.rotate.x = extruder.rotate.y = 1.1;
-    extruder.extrude(shape);
+    var shape = Pre3d.ShapeUtils.makeSphere(1, 3, 20);
     
     shape.state = {
       rotate_y_rad: 0,
@@ -76,7 +68,7 @@ $(function() {
       renderer.transform.reset();
       renderer.transform.rotateX(shape.state.rotate_x_rad);
       renderer.transform.rotateY(shape.state.rotate_y_rad);
-      renderer.transform.translate(shape.state.x, shape.state.y, -30);
+      renderer.transform.translate(shape.state.x, shape.state.y, 0);
       renderer.bufferShape(shape);
     }
 
@@ -88,12 +80,6 @@ $(function() {
   }
   
   var spin_and_draw = function() {
-    for (var i in shapes) {
-      var shape = shapes[i];
-      shape.state.rotate_y_rad += 0.03;
-      shape.state.rotate_x_rad += 0.01;
-    }
-    
     draw();
     stats.update();
   };
@@ -125,7 +111,7 @@ $(function() {
   };
   
   var pixelsToX = function(pixels) {
-    return ((pixels / $(canvas).width()) * 2 - 1) * 17;
+    return ((pixels / $(canvas).width()) * 2 - 1) * 18;
   };
   
   var pixelsToY = function(pixels) {
