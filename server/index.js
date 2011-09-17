@@ -8,6 +8,7 @@ var clients = [];
 io.sockets.on('connection', function (socket) {
   clients.push(socket);
   var object = {type: 'ship', id: socket.id};
+  socket.emit('me', socket.id);
   for (var i in clients) {
     clients[i].emit('create', object);
   }
