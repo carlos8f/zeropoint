@@ -16,16 +16,24 @@ $(function() {
     trail: 88, // Afterglow percentage
     shadow: false // Whether to render a shadow
   };
-  var spinner = new Spinner(opts).spin($('body').get(0));
   
   var scaleCanvas = function() {
-    canvas.width = $(window).width() - 5;
-    canvas.height = $(window).height() - 5;
+    canvas.width = $(window).width();
+    canvas.height = $(window).height();
     renderer.calculateScale();
   };
   
   var setupCanvas = function() {
-    canvas = $('#canvas').get(0);
+    
+    canvas = document.createElement('canvas');
+    $(canvas).css('display', 'none').mousedown(function(e) {
+      var pos = relXY(e);
+      my_ship.state.x = pixelsToX(pos.x);
+      my_ship.state.y = pixelsToY(pos.y);
+      e.preventDefault();
+      return false;
+    });
+    $('body').append(canvas);
     renderer = new Pre3d.Renderer(canvas);
     renderer.draw_overdraw = false;
     renderer.fill_rgba = null;
@@ -36,6 +44,9 @@ $(function() {
     scaleCanvas();
     $(window).resize(scaleCanvas);
   };
+  
+  setupCanvas();
+  var spinner = new Spinner(opts).spin($('body').get(0));
   
   var createObject = function(object) {
     var shape = Pre3d.ShapeUtils.makeOctahedron();
@@ -75,7 +86,7 @@ $(function() {
   var spin_and_draw = function() {
     for (var i in shapes) {
       var shape = shapes[i];
-      shape.state.rotate_y_rad += 0.02;
+      shape.state.rotate_y_rad += 0.03;
       shape.state.rotate_x_rad += 0.01;
     }
     
@@ -120,7 +131,7 @@ $(function() {
   var socket = io.connect();
   socket.on('connect', function () {
     spinner.stop();
-    setupCanvas();
+    $(canvas).css('display', 'block');
     ticker.start();
   });
   socket.on('me', function(id){
@@ -137,14 +148,6 @@ $(function() {
   });
   socket.on('destroy', function (object) {
     
-  });
-  
-  $('#canvas').mousedown(function(e) {
-    var pos = relXY(e);
-    my_ship.state.x = pixelsToX(pos.x);
-    my_ship.state.y = pixelsToY(pos.y);
-    e.preventDefault();
-    return false;
   });
 });
 
