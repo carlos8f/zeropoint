@@ -24,7 +24,7 @@
   </head>
   <body>
     <div class="canvas-container">
-      <canvas id="canvas" width="1200" height="700">Sorry, this demo requires a web browser which supports HTML5 canvas!</canvas>
+      <canvas id="canvas">Sorry, this demo requires a web browser which supports HTML5 canvas!</canvas>
     </div>
   </body>
 </html>

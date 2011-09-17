@@ -18,6 +18,12 @@ $(function() {
   };
   var spinner = new Spinner(opts).spin($('body').get(0));
   
+  var scaleCanvas = function() {
+    canvas.width = $(window).width() - 5;
+    canvas.height = $(window).height() - 5;
+    renderer.calculateScale();
+  };
+  
   var setupCanvas = function() {
     canvas = $('#canvas').get(0);
     renderer = new Pre3d.Renderer(canvas);
@@ -27,7 +33,9 @@ $(function() {
     renderer.fill_rgba = null;
     renderer.stroke_rgba = new Pre3d.RGBA(0xff/255, 0xff/255, 0xff/255, 0.5);
     renderer.camera.focal_length = 3;
-  }
+    scaleCanvas();
+    $(window).resize(scaleCanvas);
+  };
   
   var createObject = function(object) {
     var shape = Pre3d.ShapeUtils.makeOctahedron();

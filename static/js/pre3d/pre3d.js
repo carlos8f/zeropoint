@@ -644,11 +644,8 @@ var Pre3d = (function() {
     //   };
     this.quad_callback = null;
 
-    // Internals, don't access me.
-    this.width_  = canvas_element.width;
-    this.height_ = canvas_element.height;
-    this.scale_ = this.height_ / 2;
-    this.xoff_ = this.width_ / 2;
+    // Calculate initial scale.
+    this.calculateScale();
 
     this.buffered_quads_ = null;
     this.emptyBuffer();
@@ -677,7 +674,14 @@ var Pre3d = (function() {
         this.fillStyle = 'rgba(' + rgba.join(',') + ')';
       }
     }
-  }
+  };
+  
+  Renderer.prototype.calculateScale = function() {
+    this.width_  = this.canvas.width;
+    this.height_ = this.canvas.height;
+    this.scale_ = this.height_ / 2;
+    this.xoff_ = this.width_ / 2;
+  };
 
   Renderer.prototype.pushTransform = function() {
     this.transform_stack_.push(this.transform.dup());
