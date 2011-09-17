@@ -37,9 +37,9 @@ $(function() {
     renderer = new Pre3d.Renderer(canvas);
     renderer.draw_overdraw = false;
     renderer.fill_rgba = null;
-    renderer.ctx.lineWidth = 0.9;
+    renderer.ctx.lineWidth = 1;
     renderer.fill_rgba = null;
-    renderer.stroke_rgba = new Pre3d.RGBA(0xff/255, 0xff/255, 0xff/255, 0.5);
+    renderer.stroke_rgba = new Pre3d.RGBA(0xff/255, 0xff/255, 0xff/255, 0.7);
     renderer.camera.focal_length = 3;
     scaleCanvas();
     $(window).resize(scaleCanvas);
@@ -49,13 +49,17 @@ $(function() {
   var spinner = new Spinner(opts).spin($('body').get(0));
   
   var createObject = function(object) {
-    var shape = Pre3d.ShapeUtils.makeOctahedron();
-    Pre3d.ShapeUtils.linearSubdivideTri(shape);
-    Pre3d.ShapeUtils.forEachVertex(shape, function(v, i, s) {
-      s.vertices[i] = Pre3d.Math.unitVector3d(v);  // TODO(deanm): inplace.
+    var shape = Pre3d.ShapeUtils.makeSphere(0.2, 5, 2);
+    // Do an extrusion so we can some interesting non-planar quads.
+    var extruder = new Pre3d.ShapeUtils.Extruder();
+    extruder.selectCustom(function(shape, quad_index) {
+      return (quad_index != 0);
     });
-    // We need to rebuild the normals after extruding the vertices.
-    Pre3d.ShapeUtils.rebuildMeta(shape);
+    extruder.set_count(20);
+    extruder.set_distance(5);
+    extruder.rotate.x = extruder.rotate.y = 1.1;
+    extruder.extrude(shape);
+    
     shape.state = {
       rotate_y_rad: 0,
       rotate_x_rad: 0,
