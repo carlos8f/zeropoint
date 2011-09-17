@@ -25,7 +25,7 @@ $(function() {
     renderer.fill_rgba = null;
     renderer.ctx.lineWidth = 0.9;
     renderer.fill_rgba = null;
-    renderer.stroke_rgba = new Pre3d.RGBA(0x00/255, 0xff/255, 0x00/255, 0.5);
+    renderer.stroke_rgba = new Pre3d.RGBA(0xff/255, 0xff/255, 0xff/255, 0.5);
     renderer.camera.focal_length = 3;
   }
   
