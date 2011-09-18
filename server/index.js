@@ -1,45 +1,59 @@
 var express = require('express'),
     app = require('../app'),
-    _ = require('underscore'),
     io = require('socket.io').listen(app);
 
-var clients = [];
+var clients = {};
 
-io.sockets.on('connection', function (socket) {
-  clients.push(socket);
-  var object = {type: 'ship', id: socket.id};
-  socket.emit('me', socket.id);
-  for (var i in clients) {
-    clients[i].emit('create', object);
+var newId = function(length) {
+  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+  var str = '';
+  for (var i = 0; i < length; i++) {
+    var rnum = Math.floor(Math.random() * chars.length);
+    str += chars.substring(rnum, rnum+1);
   }
-});
+  return str;
+};
 
-io.sockets.on('disconnect', function (socket) {
-  var new_clients = [];
+var emitSnapshot = function() {
+  // Generate snapshot.
+  var snapshot = [];
   for (var i in clients) {
-    if (clients[i].id != socket.id) {
-      new_clients.push(clients[i]);
+    snapshot.push({id: clients[i].id, state: clients[i].state});
+    if (clients[i].state.destroyed) {
+      delete clients[i];
     }
   }
-  clients = new_clients;
-  var object = {type: 'ship', id: socket.id};
-  for (var j in clients) {
-    clients[j].emit('destroy', object);
-  }
+
+  io.sockets.emit('snapshot', snapshot);
+};
+
+io.sockets.on('connection', function (socket) {
+  var id = newId(4);
+  socket.emit('join', id);
+  socket.cid = id;
+  var client = {
+    id: id,
+    socket: socket,
+    state: {
+      ry: 0,
+      rx: 0,
+      x: 0,
+      y: 0,
+      z: 0,
+      destroyed: false
+    }
+  };
+  clients[id] = client;
+  socket.on('move', function(state) {
+    // TODO: check game rules to ensure a valid move.
+    client.state = state;
+    emitSnapshot();
+  });
+  socket.on('disconnect', function() {
+    console.log('disconnect: '+ socket.cid);
+    clients[socket.cid].state.destroyed = true;
+    emitSnapshot();
+  });
+  emitSnapshot();
 });
 
-// Send snapshots 10x/sec.
-setInterval(function() {
-  // Generate snapshot.
-  /*
-  var snapshot = {ts: new Date().getTime(), data: []};
-  _.each(clients, function() {
-    snapshot.data.push({x: Math.random(), y: Math.random()});
-  });
-
-  // Send to each client.
-  _.each(clients, function(client) {
-    client.emit('snapshot', snapshot);
-  });
-  */
-}, 1000 / 10);

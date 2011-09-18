@@ -1,4 +1,4 @@
-var canvas, renderer, shapes = [], my_id, my_ship;
+var canvas, renderer, shapes = {}, my_ship, tick_id;
 (function($) {
 
 $(function() {
@@ -24,12 +24,14 @@ $(function() {
   };
   
   var setupCanvas = function() {
-    
     canvas = document.createElement('canvas');
     $(canvas).css('display', 'none').mousedown(function(e) {
-      var pos = relXY(e);
-      my_ship.state.x = pixelsToX(pos.x);
-      my_ship.state.y = pixelsToY(pos.y);
+      if (typeof my_ship != 'undefined') {
+        var pos = relXY(e);
+        my_ship.state.x = pixelsToX(pos.x);
+        my_ship.state.y = pixelsToY(pos.y);
+        socket.emit('move', my_ship.state);
+      }
       e.preventDefault();
       return false;
     });
@@ -38,7 +40,6 @@ $(function() {
     renderer.draw_overdraw = false;
     renderer.fill_rgba = null;
     renderer.ctx.lineWidth = 1;
-    renderer.fill_rgba = null;
     renderer.stroke_rgba = new Pre3d.RGBA(0xff/255, 0xff/255, 0xff/255, 0.7);
     renderer.camera.focal_length = 3;
     renderer.camera.transform.translate(0, 0, -30);
@@ -49,26 +50,19 @@ $(function() {
   setupCanvas();
   var spinner = new Spinner(opts).spin($('body').get(0));
   
-  var createObject = function(object) {
+  var createObject = function(snapshot) {
     var shape = Pre3d.ShapeUtils.makeSphere(1, 3, 20);
-    
-    shape.state = {
-      rotate_y_rad: 0,
-      rotate_x_rad: 0,
-      x: 0,
-      y: 0
-    };
-    shapes.push(shape);
+    shape.state = snapshot.state;
     return shape;
-  }
-  
+  };
+
   var draw = function() {
     for (var i in shapes) {
       var shape = shapes[i];
       renderer.transform.reset();
-      renderer.transform.rotateX(shape.state.rotate_x_rad);
-      renderer.transform.rotateY(shape.state.rotate_y_rad);
-      renderer.transform.translate(shape.state.x, shape.state.y, 0);
+      renderer.transform.rotateX(shape.state.rx);
+      renderer.transform.rotateY(shape.state.ry);
+      renderer.transform.translate(shape.state.x, shape.state.y, shape.state.z);
       renderer.bufferShape(shape);
     }
 
@@ -77,18 +71,20 @@ $(function() {
 
     renderer.drawBuffer();
     renderer.emptyBuffer();
-  }
-  
-  var spin_and_draw = function() {
-    draw();
-    stats.update();
+  };
+
+  // Draw 30 times/sec.
+  var tick = function() {
+    return setInterval(function() {
+      draw();
+      stats.update();
+    }, 1000 / 30);
   };
   
-  var ticker = new DemoUtils.Ticker(30, spin_and_draw);
-  
   var relXY = function(e) {
-    if (typeof e.offsetX == 'number')
+    if (typeof e.offsetX == 'number') {
       return {x: e.offsetX, y: e.offsetY};
+    }
 
     // TODO this is my offsetX/Y emulation for Firefox.  I'm not sure it is
     // exactly right, but it seems to work ok, including scroll, etc.
@@ -103,13 +99,6 @@ $(function() {
     return {x: e.layerX - off.x, y: e.layerY - off.y};
   }
   
-  var easeInOutCubic = function (t, b, c, d) {
-    t /= d/2;
-    if (t < 1) return c/2*t*t*t + b;
-    t -= 2;
-    return c/2*(t*t*t + 2) + b;
-  };
-  
   var pixelsToX = function(pixels) {
     return ((pixels / $(canvas).width()) * 2 - 1) * 18;
   };
@@ -119,25 +108,28 @@ $(function() {
   };
 
   var socket = io.connect();
-  socket.on('connect', function () {
+  socket.on('join', function (id) {
     spinner.stop();
     $(canvas).css('display', 'block');
-    ticker.start();
-  });
-  socket.on('me', function(id){
     my_id = id;
-  })
-  socket.on('create', function (object) {
-    var shape = createObject(object);
-    if (object.id == my_id) {
-      my_ship = shape;
-    }
+    tick_id = tick();
   });
   socket.on('snapshot', function (snapshot) {
-    
-  });
-  socket.on('destroy', function (object) {
-    
+    for (var i in snapshot) {
+      var id = snapshot[i].id;
+      if (typeof shapes[id] == 'undefined' && !snapshot[i].state.destroyed) {
+        shapes[id] = createObject(snapshot[i]);
+        if (id == my_id) {
+          my_ship = shapes[id];
+        }
+      }
+      else if (snapshot[i].state.destroyed) {
+        delete shapes[id];
+      }
+      else {
+        shapes[id].state = snapshot[i].state;
+      }
+    }
   });
 });
 

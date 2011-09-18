@@ -1,20 +1,19 @@
 var express = require('express'),
     app = module.exports = express.createServer(),
-    conf = require('./conf.js'),
-    _ = require('underscore');
+    conf = require('./conf.js');
 
 app.configure(function() {
   app.use(app.router);
   app.use(express.static(__dirname + '/static'));
-  app.register('._', {
+  // Static HTML render.
+  app.register('.html', {
     compile: function(str, options) {
-      var compiled = _.template(str);
       return function (locals) {
-        return compiled(locals);
+        return str;
       };
     }
   });
-  app.set('view engine', '_');
+  app.set('view engine', 'html');
   app.set('view options', {
     layout: false
   });
