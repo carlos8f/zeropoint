@@ -51,7 +51,13 @@ $(function() {
   var spinner = new Spinner(opts).spin($('body').get(0));
   
   var createObject = function(snapshot) {
-    var shape = Pre3d.ShapeUtils.makeSphere(1, 3, 20);
+    var shape = Pre3d.ShapeUtils.makeOctahedron();
+    Pre3d.ShapeUtils.linearSubdivideTri(shape);
+    Pre3d.ShapeUtils.forEachVertex(shape, function(v, i, s) {
+      s.vertices[i] = Pre3d.Math.unitVector3d(v);  // TODO(deanm): inplace.
+    });
+    // We need to rebuild the normals after extruding the vertices.
+    Pre3d.ShapeUtils.rebuildMeta(shape);
     shape.state = snapshot.state;
     return shape;
   };
@@ -76,6 +82,11 @@ $(function() {
   // Draw 30 times/sec.
   var tick = function() {
     return setInterval(function() {
+      for (var i in shapes) {
+        var shape = shapes[i];
+        shape.state.rx += 0.01;
+        shape.state.ry += 0.03;
+      }
       draw();
       stats.update();
     }, 1000 / 30);
@@ -127,7 +138,8 @@ $(function() {
         delete shapes[id];
       }
       else {
-        shapes[id].state = snapshot[i].state;
+        shapes[id].state.x = snapshot[i].state.x;
+        shapes[id].state.y = snapshot[i].state.y;
       }
     }
   });
