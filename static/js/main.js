@@ -1,11 +1,5 @@
 
-var statsEnabled = true;
-
-var container, stats;
-
-var camera, scene, renderer;
-
-var cross;
+var camera, scene, renderer, ship;
 
 $(init);
 
@@ -19,9 +13,10 @@ function init() {
   camera = new THREE.RollCamera( 60, window.innerWidth / window.innerHeight, 1, 1000 );
   camera.movementSpeed = 100;
   camera.lookSpeed = 3;
-  camera.constrainVertical = [ -0.5, 0.5 ];
-  camera.position.z = 40;
-  camera.position.y = 5;
+  camera.constrainVertical = [ -0.2, 0.2 ];
+  camera.position.z = 30;
+  camera.position.y = 1.5;
+  camera.mouseLook = false;
 
   // world
 
@@ -58,16 +53,19 @@ function init() {
   scene.addChild( light );
 
   // ship
-
   var binLoader = new THREE.BinaryLoader();
-  binLoader.load( { model: "/models/ship.js", callback: function( geometry ) { addShip( geometry) } } );
+  binLoader.load( { model: '/models/ship.js', callback: function( geometry ) { addModel( geometry ) } } );
 
-  function addShip( geometry ) {
-    var mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
-    mesh.scale.set( 2, 2, 2 );
-    scene.addObject(mesh);
+  function addModel ( geometry ) {
+    
+    ship = new THREE.Ship( geometry, new THREE.MeshFaceMaterial() );
+    ship.scale.set( 2, 2, 2 );
+    ship.lookSpeed = 4;
+    ship.movementSpeed = 100;
+    ship.constrainVertical = [ -0.7, 0.7 ];
+    scene.addChild( ship );
+
   }
-
 
   // renderer
 
@@ -77,16 +75,6 @@ function init() {
 
   $('body').append( renderer.domElement );
 
-  if ( statsEnabled ) {
-
-    stats = new Stats();
-    stats.domElement.style.position = 'absolute';
-    stats.domElement.style.top = '0px';
-    stats.domElement.style.zIndex = 100;
-    $('body').append( stats.domElement );
-
-  }
-
   animate();
 }
 
@@ -94,6 +82,5 @@ function init() {
 function animate() {
   requestAnimationFrame(animate);
   renderer.render( scene, camera );
-  if ( statsEnabled) stats.update();
 }
 
