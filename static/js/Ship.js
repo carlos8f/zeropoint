@@ -58,12 +58,27 @@ THREE.Ship = function ( geometry, material ) {
   var firePrimary = false;
   var fireSecondary = false;
 
-	var doRoll = false, rollDirection = 1, thrust = 0, thrustDir = 0, sideSpeed = 0, upSpeed = 0;
+  this.thrust = 0;
+
+	var doRoll = false, rollDirection = 1, thrustDir = 0, sideSpeed = 0, upSpeed = 0;
 
 	var mouseX = 0, mouseY = 0;
 
 	var windowHalfX = window.innerWidth / 2;
 	var windowHalfY = window.innerHeight / 2;
+
+  this.reset = function() {
+    this.position = new THREE.Vector3();
+    this.forward = new THREE.Vector3( 0, 0, 1 );
+    this.thrust = 0;
+    this.roll = 0;
+    return false;
+  };
+
+  this.toggleMouseLook = function() {
+    this.mouseLook = this.mouseLook ? false : true;
+    return false;
+  }
 
 	// custom update
 
@@ -87,6 +102,8 @@ THREE.Ship = function ( geometry, material ) {
 
 		var actualSpeed = this.delta * this.movementSpeed;
 
+    var thrust = this.thrust;
+
     switch ( thrustDir ) {
 
       case 1: thrust += (thrust * 0.05) + 0.01; break;
@@ -101,7 +118,7 @@ THREE.Ship = function ( geometry, material ) {
           thrust += (- thrust * 0.05);
 
         }
-
+        break;
     }
 
     if ( thrust > 1 ) {
@@ -113,6 +130,8 @@ THREE.Ship = function ( geometry, material ) {
       thrust = -1;
 
     }
+
+    this.thrust = thrust;
 
 		this.translateZ( actualSpeed * thrust );
 		//this.translateX( actualSpeed * sideSpeed );

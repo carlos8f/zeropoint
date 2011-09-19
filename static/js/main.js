@@ -1,5 +1,5 @@
 
-var camera, scene, renderer, ship;
+var camera, scene, renderer, ship, stats;
 
 $(init);
 
@@ -61,6 +61,13 @@ function init() {
     //camera.rotationAutoUpdate = true;
     scene.addChild( camera );
 
+    $('.info').html('Space demo.<br /><small>Controls: WASD w/ mouse<br /><a href="#" onclick="ship.reset();">reset ship</a> | <a href="#" onclick="ship.toggleMouseLook();">toggle mouseLook</a></small>');
+
+    stats = new Stats();
+    stats.domElement.style.position = 'absolute';
+		stats.domElement.style.top = '0px';
+    $('body').append( stats.domElement );
+
     animate();
 
   }
@@ -78,5 +85,6 @@ function init() {
 function animate() {
   requestAnimationFrame(animate);
   renderer.render( scene, camera );
+  stats.update();
 }
 
