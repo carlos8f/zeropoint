@@ -14,31 +14,27 @@ function init() {
   // scene and camera
 
   scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2( 0xffffff, 0.002 );
+  //scene.fog = new THREE.FogExp2( 0xffffff, 0.002 );
 
   camera = new THREE.RollCamera( 60, window.innerWidth / window.innerHeight, 1, 1000 );
   camera.movementSpeed = 100;
   camera.lookSpeed = 3;
   camera.constrainVertical = [ -0.5, 0.5 ];
-  //camera.autoForward = true;
+  camera.position.z = 40;
+  camera.position.y = 5;
 
   // world
 
-  var cube = new THREE.CubeGeometry( 20, 60, 20 );
+  var cube = new THREE.CubeGeometry( 1, 1, 1 );
 
-  cube.vertices[ 0 ].position.multiplyScalar( 0.01 );
-  cube.vertices[ 1 ].position.multiplyScalar( 0.01 );
-  cube.vertices[ 4 ].position.multiplyScalar( 0.01 );
-  cube.vertices[ 5 ].position.multiplyScalar( 0.01 );
+  var material =  new THREE.MeshLambertMaterial( { color:0x999999 } );
 
-  var material =  new THREE.MeshLambertMaterial( { color:0xffffff } );
-
-  for( var i = 0; i < 500; i++ ) {
+  for( var i = 0; i < 5000; i++) {
 
     var mesh = new THREE.Mesh( cube, material );
-    mesh.position.set(( Math.random() - 0.5 ) * 1000,
-    ( Math.random() - 0.5 ) * 1000,
-    ( Math.random() - 0.5 ) * 1000 );
+    mesh.position.set(( Math.random() - 0.5 ) * 2000,
+    ( Math.random() - 0.5 ) * 2000,
+    ( Math.random() - 0.5 ) * 2000 );
 
     mesh.updateMatrix();
     mesh.matrixAutoUpdate = false;
@@ -50,23 +46,33 @@ function init() {
 
 
   // lights
-
   light = new THREE.DirectionalLight( 0xffffff );
   light.position.set( 1, 1, 1 );
   scene.addChild( light );
 
-  light = new THREE.DirectionalLight( 0x002288 );
+  light = new THREE.DirectionalLight( 0xffffff );
   light.position.set( -1, -1, -1 );
   scene.addChild( light );
 
   light = new THREE.AmbientLight( 0x222222 );
   scene.addChild( light );
 
+  // ship
+
+  var binLoader = new THREE.BinaryLoader();
+  binLoader.load( { model: "/models/ship.js", callback: function( geometry ) { addShip( geometry) } } );
+
+  function addShip( geometry ) {
+    var mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial() );
+    mesh.scale.set( 2, 2, 2 );
+    scene.addObject(mesh);
+  }
+
 
   // renderer
 
   renderer = new THREE.WebGLRenderer( { antialias: true } );
-  renderer.setClearColorHex( 0xffffff, 1 );
+  renderer.setClearColorHex( 0x000000, 1 );
   renderer.setSize( window.innerWidth, window.innerHeight );
 
   $('body').append( renderer.domElement );
