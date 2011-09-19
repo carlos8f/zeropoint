@@ -33,6 +33,7 @@ THREE.Ship = function ( geometry, material ) {
 	this.rollSpeed = 1;
 
 	this.constrainVertical = [ -0.9, 0.9 ];
+  this.constrainRoll = [ -0.9, 0.9 ];
 
 	this.domElement = document;
 
@@ -57,7 +58,7 @@ THREE.Ship = function ( geometry, material ) {
   var firePrimary = false;
   var fireSecondary = false;
 
-	var doRoll = false, rollDirection = 1, forwardSpeed = 0, sideSpeed = 0, upSpeed = 0;
+	var doRoll = false, rollDirection = 1, thrust = 0, thrustDir = 0, sideSpeed = 0, upSpeed = 0;
 
 	var mouseX = 0, mouseY = 0;
 
@@ -85,16 +86,52 @@ THREE.Ship = function ( geometry, material ) {
 		}
 
 		var actualSpeed = this.delta * this.movementSpeed;
-		var forwardOrAuto = ( forwardSpeed > 0 || ( this.autoForward && ! ( forwardSpeed < 0 ) ) ) ? 1 : forwardSpeed;
 
-		this.translateZ( actualSpeed * forwardOrAuto );
-		this.translateX( actualSpeed * sideSpeed );
-		this.translateY( actualSpeed * upSpeed );
+    switch ( thrustDir ) {
+
+      case 1: thrust += (thrust * 0.05) + 0.01; break;
+      case -1: thrust -= (thrust * 0.05) + 0.01; break;
+      case 0:
+        if ( thrust > 0 ) {
+
+          thrust -= (thrust * 0.05);
+
+        } else if ( thrust < 0 ) {
+
+          thrust += (- thrust * 0.05);
+
+        }
+
+    }
+
+    if ( thrust > 1 ) {
+
+      thrust = 1;
+
+    } else if ( thrust < -1 ) {
+
+      thrust = -1;
+
+    }
+
+		this.translateZ( actualSpeed * thrust );
+		//this.translateX( actualSpeed * sideSpeed );
+		//this.translateY( actualSpeed * upSpeed );
 
 		if( doRoll ) {
 
 			this.roll += this.rollSpeed * this.delta * rollDirection;
+      
+      // Constrain roll
+      if ( this.roll > this.constrainRoll [ 1 ] ) {
 
+        this.roll = this.constrainRoll [ 1 ];
+
+      } else if ( this.roll < this.constrainRoll [ 0 ] ) {
+
+        this.roll = this.constrainRoll [ 0 ];
+
+      }
 		}
 
 		// cap forward up / down
@@ -204,22 +241,16 @@ THREE.Ship = function ( geometry, material ) {
 		switch( event.keyCode ) {
 
 			case 38: /*up*/
-			case 87: /*W*/ forwardSpeed = 1; break;
+			case 87: /*W*/ thrustDir = 1; break;
 
 			case 37: /*left*/
-			case 65: /*A*/ sideSpeed = -1; break;
+			case 65: /*A*/ doRoll = true; rollDirection = 1; break;
 
 			case 40: /*down*/
-			case 83: /*S*/ forwardSpeed = -1; break;
+			case 83: /*S*/ thrustDir = -1; break;
 
 			case 39: /*right*/
-			case 68: /*D*/ sideSpeed = 1; break;
-
-			case 81: /*Q*/ doRoll = true; rollDirection = 1; break;
-			case 69: /*E*/ doRoll = true; rollDirection = -1; break;
-
-			case 82: /*R*/ upSpeed = 1; break;
-			case 70: /*F*/ upSpeed = -1; break;
+			case 68: /*D*/ doRoll = true; rollDirection = -1; break;
 
 		}
 
@@ -230,19 +261,16 @@ THREE.Ship = function ( geometry, material ) {
 		switch( event.keyCode ) {
 
 			case 38: /*up*/
-			case 87: /*W*/ forwardSpeed = 0; break;
+			case 87: /*W*/ thrustDir = 0; break;
 
 			case 37: /*left*/
-			case 65: /*A*/ sideSpeed = 0; break;
+			case 65: /*A*/ doRoll = false; sideSpeed = 0; break;
 
 			case 40: /*down*/
-			case 83: /*S*/ forwardSpeed = 0; break;
+			case 83: /*S*/ thrustDir = 0; break;
 
 			case 39: /*right*/
-			case 68: /*D*/ sideSpeed = 0; break;
-
-			case 81: /*Q*/ doRoll = false; break;
-			case 69: /*E*/ doRoll = false; break;
+			case 68: /*D*/ doRoll = false; sideSpeed = 0; break;
 
 			case 82: /*R*/ upSpeed = 0; break;
 			case 70: /*F*/ upSpeed = 0; break;

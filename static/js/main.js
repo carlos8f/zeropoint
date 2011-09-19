@@ -10,21 +10,13 @@ function init() {
   scene = new THREE.Scene();
   //scene.fog = new THREE.FogExp2( 0xffffff, 0.002 );
 
-  camera = new THREE.RollCamera( 60, window.innerWidth / window.innerHeight, 1, 1000 );
-  camera.movementSpeed = 100;
-  camera.lookSpeed = 3;
-  camera.constrainVertical = [ -0.2, 0.2 ];
-  camera.position.z = 30;
-  camera.position.y = 1.5;
-  camera.mouseLook = false;
-
   // world
 
   var cube = new THREE.CubeGeometry( 1, 1, 1 );
 
   var material =  new THREE.MeshLambertMaterial( { color:0x999999 } );
 
-  for( var i = 0; i < 5000; i++) {
+  for( var i = 0; i < 6000; i++) {
 
     var mesh = new THREE.Mesh( cube, material );
     mesh.position.set(( Math.random() - 0.5 ) * 2000,
@@ -36,9 +28,6 @@ function init() {
     scene.addChild( mesh );
 
   }
-
-  scene.addChild( camera );
-
 
   // lights
   light = new THREE.DirectionalLight( 0xffffff );
@@ -61,9 +50,18 @@ function init() {
     ship = new THREE.Ship( geometry, new THREE.MeshFaceMaterial() );
     ship.scale.set( 2, 2, 2 );
     ship.lookSpeed = 4;
-    ship.movementSpeed = 100;
+    ship.movementSpeed = 150;
     ship.constrainVertical = [ -0.7, 0.7 ];
+    //ship.rotationAutoUpdate = true;
     scene.addChild( ship );
+
+    camera = new THREE.Camera( 60, window.innerWidth / window.innerHeight, 1, 10000, ship );
+    camera.position.z = 30;
+    camera.position.y = 1.5;
+    //camera.rotationAutoUpdate = true;
+    scene.addChild( camera );
+
+    animate();
 
   }
 
@@ -74,8 +72,6 @@ function init() {
   renderer.setSize( window.innerWidth, window.innerHeight );
 
   $('body').append( renderer.domElement );
-
-  animate();
 }
 
 
