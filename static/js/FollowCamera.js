@@ -23,38 +23,38 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target ) {
 
 	THREE.Camera.call( this, fov, aspect, near, far, target );
 
-  var tmpParent = new THREE.Vector3();
-  var cameraOffset = new THREE.Vector3( 0, 2, 15 );
+  var mouseDragStart = new THREE.Vector3();
+  var mouseDragCurrent = new THREE.Vector3();
+  var leftClicking = false;
+  var rightClicking = false;
+  var thetaX = 0;
+  var thetaY = 0;
+  var thetaXOffset = 0;
+  var thetaYOffset = 0;
 
 	// custom update
 
 	this.update = function( parentMatrixWorld, forceUpdate, camera ) {
     
-    this.matrixAutoUpdate && this.updateMatrix();
-
     if ( forceUpdate || this.matrixWorldNeedsUpdate ) {
 
-      if ( parentMatrixWorld ) {
-        
-        tmpParent = parentMatrixWorld.getPosition();
-        tmpParent.addSelf ( cameraOffset );
-        //tmpParent.multiplyScalar ( 0.1 );
+      this.position.x = -18 * Math.sin( thetaX * Math.PI / 360 );
+		  this.position.z = 18 * Math.cos( thetaX * Math.PI / 360 );
+      this.position.y = -200 * Math.sin( thetaY * Math.PI / 360 );
 
-        this.matrixWorld.setPosition( tmpParent );
+      this.position.addSelf( this.target.position );
 
-      } else {
+      this.updateMatrix();
+			this.matrix.lookAt( this.position, this.target.position, this.up );
+      
+      this.matrixWorld.copy( this.matrix );
 
-        this.matrixWorld.copy( this.matrix );
-
-      }
-
-			this.matrixWorldNeedsUpdate = false;
+      this.matrixWorldNeedsUpdate = false;
 			forceUpdate = true;
 
 			THREE.Matrix4.makeInvert( this.matrixWorld, this.matrixWorldInverse );
+
     }
-    
-    this.updateMatrix();
 
     // update children
 
@@ -65,6 +65,72 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target ) {
     }
 
 	};
+
+  function onDocumentMouseDown( event ) {
+
+		event.preventDefault();
+
+    switch ( event.button ) {
+      case 0: leftClicking = true; break;
+      case 2: rightClicking = true; break;
+    }
+
+    mouseDragStart.x = mouseDragCurrent.x = constrain( ( event.clientX / window.innerWidth ) * 2 - 1, -1.0, 1.0 );
+    mouseDragStart.y = mouseDragCurrent.y = constrain( - ( event.clientY / window.innerHeight ) * 2 + 1, -1.0, 1.0 );
+
+  }
+
+  function onDocumentMouseUp( event ) {
+
+		event.preventDefault();
+
+    switch ( event.button ) {
+      case 0: leftClicking = false; break;
+      case 2: rightClicking = false; break;
+    }
+
+    thetaXOffset = thetaX;
+    thetaYOffset = thetaY;
+
+  }
+
+  function onDocumentMouseMove( event ) {
+
+    event.preventDefault();
+
+    if ( leftClicking ) {
+
+      mouseDragCurrent.x = constrain( ( event.clientX / window.innerWidth ) * 2 - 1, -1.0, 1.0 );
+      mouseDragCurrent.y = constrain( - ( event.clientY / window.innerHeight ) * 2 + 1, -1.0, 1.0 );
+
+      thetaX = constrain( thetaXOffset + (mouseDragCurrent.x - mouseDragStart.x) * 360, -360, 360 );
+      thetaY = constrain( thetaYOffset + (mouseDragCurrent.y - mouseDragStart.y) * 10, -10, 10 );
+      
+    }
+
+  }
+
+  function constrain ( scalar, min, max ) {
+
+    if ( scalar > max ) {
+
+      return max;
+
+    }
+    else if ( scalar < min ) {
+
+      return min;
+
+    }
+
+    return scalar;
+
+  }
+
+  document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+  document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+  document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
 };
 
 

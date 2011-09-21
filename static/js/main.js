@@ -52,12 +52,11 @@ function init() {
     ship.lookSpeed = 4;
     ship.movementSpeed = 150;
     ship.constrainVertical = [ -0.7, 0.7 ];
+    ship.mouseLook = false;
     //ship.rotationAutoUpdate = true;
     scene.addChild( ship );
 
     camera = new THREE.FollowCamera( 60, window.innerWidth / window.innerHeight, 1, 10000, ship );
-    camera.position.z = 15;
-    camera.position.y = 2;
     ship.addChild( camera );
 
     $('.info').html('Space demo.<br /><small>Controls: WASD w/ mouse<br /><a href="#" onclick="ship.reset();">reset ship</a> | <a href="#" onclick="ship.toggleMouseLook();">toggle mouseLook</a></small>');
