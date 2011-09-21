@@ -24,6 +24,7 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target ) {
 	THREE.Camera.call( this, fov, aspect, near, far, target );
 
   var tmpParent = new THREE.Vector3();
+  var cameraOffset = new THREE.Vector3( 0, 2, 15 );
 
 	// custom update
 
@@ -36,13 +37,10 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target ) {
       if ( parentMatrixWorld ) {
         
         tmpParent = parentMatrixWorld.getPosition();
-        console.log( this.position );
-        console.log( tmpParent );
-        //tmpParent.subSelf ( this.position );
-        tmpParent.multiplyScalar ( 0.1 );
-        
-        this.position.subSelf( tmpParent );
-        //this.matrix.setPosition( this.position );
+        tmpParent.addSelf ( cameraOffset );
+        //tmpParent.multiplyScalar ( 0.1 );
+
+        this.matrixWorld.setPosition( tmpParent );
 
       } else {
 
