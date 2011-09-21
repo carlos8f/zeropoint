@@ -19,7 +19,7 @@
  * }
  */
 
-THREE.FollowCamera = function ( fov, aspect, near, far, target ) {
+THREE.FollowCamera = function ( fov, aspect, near, far, target, distance ) {
 
 	THREE.Camera.call( this, fov, aspect, near, far, target );
 
@@ -28,9 +28,10 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target ) {
   var leftClicking = false;
   var rightClicking = false;
   var thetaX = 0;
-  var thetaY = 0;
+  var thetaY = -2.5;
   var thetaXOffset = 0;
-  var thetaYOffset = 0;
+  var thetaYOffset = -2.5;
+  this.distance = distance || 16;
 
 	// custom update
 
@@ -38,8 +39,8 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target ) {
     
     if ( forceUpdate || this.matrixWorldNeedsUpdate ) {
 
-      this.position.x = -18 * Math.sin( thetaX * Math.PI / 360 );
-		  this.position.z = 18 * Math.cos( thetaX * Math.PI / 360 );
+      this.position.x = -this.distance * Math.sin( thetaX * Math.PI / 360 );
+		  this.position.z = this.distance * Math.cos( thetaX * Math.PI / 360 );
       this.position.y = -200 * Math.sin( thetaY * Math.PI / 360 );
 
       this.position.addSelf( this.target.position );
