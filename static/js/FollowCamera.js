@@ -19,7 +19,7 @@
  * }
  */
 
-THREE.FollowCamera = function ( fov, aspect, near, far, target, distance ) {
+THREE.FollowCamera = function ( fov, aspect, near, far, target, cameraDistance, minDistance, maxDistance ) {
 
 	THREE.Camera.call( this, fov, aspect, near, far, target );
 
@@ -31,7 +31,9 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target, distance ) {
   var thetaY = -2.5;
   var thetaXOffset = 0;
   var thetaYOffset = -2.5;
-  this.distance = distance || 16;
+  cameraDistance = cameraDistance || 16;
+  minDistance = minDistance || 10;
+  maxDistance = maxDistance || 40;
 
 	// custom update
 
@@ -39,9 +41,9 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target, distance ) {
     
     if ( forceUpdate || this.matrixWorldNeedsUpdate ) {
 
-      this.position.x = -this.distance * Math.sin( thetaX * Math.PI / 360 );
-		  this.position.z = this.distance * Math.cos( thetaX * Math.PI / 360 );
-      this.position.y = -200 * Math.sin( thetaY * Math.PI / 360 );
+      this.position.x = -cameraDistance * Math.sin( thetaX * Math.PI / 360 );
+		  this.position.z = cameraDistance * Math.cos( thetaX * Math.PI / 360 );
+      this.position.y = -12.5 * cameraDistance * Math.sin( thetaY * Math.PI / 360 );
 
       this.position.addSelf( this.target.position );
 
@@ -111,6 +113,15 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target, distance ) {
 
   }
 
+  function onDocumentScroll( event ) {
+
+    event.preventDefault();
+
+    cameraDistance -= event.wheelDelta / 60;
+    cameraDistance = constrain( cameraDistance, minDistance, maxDistance );
+    
+  }
+
   function constrain ( scalar, min, max ) {
 
     if ( scalar > max ) {
@@ -131,6 +142,7 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target, distance ) {
   document.addEventListener( 'mousedown', onDocumentMouseDown, false );
   document.addEventListener( 'mouseup', onDocumentMouseUp, false );
   document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+  document.addEventListener( 'mousewheel', onDocumentScroll, false );
 
 };
 
