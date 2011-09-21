@@ -23,22 +23,26 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target ) {
 
 	THREE.Camera.call( this, fov, aspect, near, far, target );
 
-  var tweenMatrix = new THREE.Matrix4();
+  var tmpParent = new THREE.Vector3();
 
 	// custom update
 
 	this.update = function( parentMatrixWorld, forceUpdate, camera ) {
-
-		this.matrixAutoUpdate && this.updateMatrix();
+    
+    this.matrixAutoUpdate && this.updateMatrix();
 
     if ( forceUpdate || this.matrixWorldNeedsUpdate ) {
 
       if ( parentMatrixWorld ) {
-
-        tweenMatrix.copy ( parentMatrixWorld );
-
-
-        this.matrixWorld.multiply( parentMatrixWorld, this.matrix );
+        
+        tmpParent = parentMatrixWorld.getPosition();
+        console.log( this.position );
+        console.log( tmpParent );
+        //tmpParent.subSelf ( this.position );
+        tmpParent.multiplyScalar ( 0.1 );
+        
+        this.position.subSelf( tmpParent );
+        //this.matrix.setPosition( this.position );
 
       } else {
 
@@ -46,11 +50,13 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target ) {
 
       }
 
-      this.matrixWorldNeedsUpdate = false;
+			this.matrixWorldNeedsUpdate = false;
 			forceUpdate = true;
 
 			THREE.Matrix4.makeInvert( this.matrixWorld, this.matrixWorldInverse );
     }
+    
+    this.updateMatrix();
 
     // update children
 
