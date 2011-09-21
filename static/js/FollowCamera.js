@@ -43,7 +43,7 @@ THREE.FollowCamera = function ( fov, aspect, near, far, target, cameraDistance, 
 
       this.position.x = -cameraDistance * Math.sin( thetaX * Math.PI / 360 );
 		  this.position.z = cameraDistance * Math.cos( thetaX * Math.PI / 360 );
-      this.position.y = -12.5 * cameraDistance * Math.sin( thetaY * Math.PI / 360 );
+      this.position.y = -20 * cameraDistance * Math.sin( thetaY * Math.PI / 360 );
 
       this.position.addSelf( this.target.position );
 
